@@ -1,36 +1,105 @@
 # Backend NestJS - Sistema de Soporte Técnico
 
-## Etapa 1: Arquitectura Inicial
-- Creación de la estructura base modular, servicios y controladores.
+API REST desarrollada con NestJS, TypeORM, MySQL, validaciones con DTOs y documentación interactiva con Swagger.
 
 ---
 
-## Etapa 2: Persistencia y Validación
-- Configuración de TypeORM + MySQL, variables de entorno (.env), entidad `Soporte` y DTOs con `class-validator`.
+## 📌 Historial de Entregas y Commits
+
+| Etapa | Nombre | Desarrollo Esperado | Evidencia |
+|---|---|---|---|
+| **1** | **Arquitectura Inicial** | Creación del proyecto NestJS, módulo, controller, service y estructura base. | `Commit 1` + README |
+| **2** | **Persistencia y Validación** | Entity, TypeORM + MySQL, variables de entorno, DTO y validaciones. | `Commit 2` + README |
+| **3** | **Funcionalidad y Reglas** | CRUD, búsqueda, manejo de errores y reglas de negocio. | `Commit 3` + README |
+| **4** | **Pruebas y Versión Final** | Swagger, pruebas de endpoints, revisión técnica y preparación de entrega. | `Commit 4` + README |
 
 ---
 
-## Etapa 3: Funcionalidad y Reglas de Negocio
+## 🚀 Requisitos e Instalación
 
-### Descripción
-Implementación completa de las operaciones CRUD, endpoint de búsqueda de solicitudes por título, manejo de excepciones HTTP personalizadas y aplicación de las reglas de negocio especificadas.
+### Requisitos Previos
+- Node.js (v18+)
+- MySQL Server en ejecución
 
-### Endpoints Disponibles
-- `GET /soporte`: Obtener el listado completo de solicitudes de soporte.
-- `GET /soporte/buscar?titulo=...`: Buscar solicitudes filtradas por título.
-- `GET /soporte/:id`: Obtener el detalle de una solicitud específica por su ID.
-- `POST /soporte`: Crear una nueva solicitud de soporte con estado inicial `Pendiente`.
-- `PUT /soporte/:id`: Actualizar los datos o estado de una solicitud existente.
-- `DELETE /soporte/:id`: Eliminar una solicitud existente.
+### Variables de Entorno (`.env`)
+Crear un archivo `.env` basado en `.env.example`:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_NAME=soportecliente_db
+```
 
-### Reglas de Negocio Implementadas (RN)
-1. **RN01 - Validación de Fecha**: La fecha de la solicitud no puede ser posterior a la fecha actual (`BadRequestException`).
-2. **RN02 - Transición de Estado Prohibida**: Una solicitud en estado `Finalizada` no puede volver a cambiar a `Pendiente` (`BadRequestException`).
-3. **RN03 - Eliminación Restringida**: Solo se permite eliminar solicitudes que se encuentren en estado `Finalizada` (`BadRequestException`).
-4. **RN04 - Solicitud Inexistente**: Si se intenta consultar, actualizar o eliminar una solicitud con ID inexistente, se retorna un error 404 (`NotFoundException`).
+### Comandos de Ejecución
+```bash
+# Instalación de dependencias
+npm install
 
-### Respuestas y Manejo de Errores
-- `200 OK`: Operación exitosa (Lectura / Actualización / Eliminación).
-- `201 Created`: Solicitud creada exitosamente.
-- `400 Bad Request`: Datos de entrada inválidos o violación de regla de negocio.
-- `404 Not Found`: Registro no encontrado en la base de datos.
+# Compilar proyecto
+npm run build
+
+# Iniciar servidor en modo desarrollo
+npm run start:dev
+```
+
+---
+
+## 📚 Documentación Interactiva (Swagger)
+
+Una vez iniciado el servidor, la documentación interactiva Swagger se encuentra disponible en:
+👉 **[http://localhost:3000/api](http://localhost:3000/api)**
+
+---
+
+## 🛠️ Endpoints y Pruebas de la API
+
+### 1. Listar todas las solicitudes
+- **Método**: `GET`
+- **Ruta**: `/soporte`
+
+### 2. Buscar solicitud por título
+- **Método**: `GET`
+- **Ruta**: `/soporte/buscar?titulo=Fallo`
+
+### 3. Obtener solicitud por ID
+- **Método**: `GET`
+- **Ruta**: `/soporte/:id`
+
+### 4. Crear solicitud
+- **Método**: `POST`
+- **Ruta**: `/soporte`
+- **Body JSON**:
+```json
+{
+  "titulo": "Fallo en impresora",
+  "cliente": "Empresa ACME",
+  "categoria": "Hardware",
+  "prioridad": "Alta",
+  "descripcion": "La impresora del departamento contable no responde",
+  "fecha": "2026-09-11"
+}
+```
+
+### 5. Actualizar solicitud
+- **Método**: `PUT`
+- **Ruta**: `/soporte/:id`
+- **Body JSON**:
+```json
+{
+  "estado": "En Proceso"
+}
+```
+
+### 6. Eliminar solicitud (Solo solicitudes 'Finalizada')
+- **Método**: `DELETE`
+- **Ruta**: `/soporte/:id`
+
+---
+
+## 📋 Reglas de Negocio (RN)
+
+1. **RN01 - Fecha no posterior a hoy**: No se permiten solicitudes con fechas futuras (`BadRequestException`).
+2. **RN02 - Transición de estado**: Una solicitud en estado `Finalizada` no puede volver a pasar a `Pendiente` (`BadRequestException`).
+3. **RN03 - Eliminación restringida**: Solo se pueden eliminar solicitudes cuya propiedad `estado` sea `Finalizada` (`BadRequestException`).
+4. **RN04 - Manejo de Errores HTTP**: Respuestas apropiadas de `404 Not Found` cuando el recurso no existe.
