@@ -6,34 +6,31 @@
 ---
 
 ## Etapa 2: Persistencia y Validación
+- Configuración de TypeORM + MySQL, variables de entorno (.env), entidad `Soporte` y DTOs con `class-validator`.
+
+---
+
+## Etapa 3: Funcionalidad y Reglas de Negocio
 
 ### Descripción
-Configuración de la persistencia de datos mediante TypeORM + MySQL, gestión de variables de entorno con dotenv, definición de la entidad `Soporte` y DTOs con reglas de validación estricta.
+Implementación completa de las operaciones CRUD, endpoint de búsqueda de solicitudes por título, manejo de excepciones HTTP personalizadas y aplicación de las reglas de negocio especificadas.
 
-### Configuración de la Base de Datos y Entorno
-Variables definidas en `.env` / `.env.example`:
-- `DB_HOST`: Host del servidor MySQL (default: `localhost`).
-- `DB_PORT`: Puerto de MySQL (default: `3306`).
-- `DB_USER`: Usuario de la base de datos (default: `root`).
-- `DB_PASS`: Contraseña de acceso.
-- `DB_NAME`: Nombre de la base de datos (`soportecliente_db`).
+### Endpoints Disponibles
+- `GET /soporte`: Obtener el listado completo de solicitudes de soporte.
+- `GET /soporte/buscar?titulo=...`: Buscar solicitudes filtradas por título.
+- `GET /soporte/:id`: Obtener el detalle de una solicitud específica por su ID.
+- `POST /soporte`: Crear una nueva solicitud de soporte con estado inicial `Pendiente`.
+- `PUT /soporte/:id`: Actualizar los datos o estado de una solicitud existente.
+- `DELETE /soporte/:id`: Eliminar una solicitud existente.
 
-### Entidad (`Soporte`)
-- `id`: Clave primaria autoincremental (`PrimaryGeneratedColumn`).
-- `titulo`: Título de la solicitud.
-- `cliente`: Nombre del cliente solicitante.
-- `categoria`: Categoría asignada (`Hardware`, `Software`, `Redes`, `Seguridad`, `Soporte Usuario`).
-- `prioridad`: Nivel de prioridad (`Baja`, `Media`, `Alta`, `Crítica`).
-- `estado`: Estado inicial por defecto `Pendiente`.
-- `descripcion`: Detalle de la incidencia.
-- `fecha`: Fecha de registro (`date`).
+### Reglas de Negocio Implementadas (RN)
+1. **RN01 - Validación de Fecha**: La fecha de la solicitud no puede ser posterior a la fecha actual (`BadRequestException`).
+2. **RN02 - Transición de Estado Prohibida**: Una solicitud en estado `Finalizada` no puede volver a cambiar a `Pendiente` (`BadRequestException`).
+3. **RN03 - Eliminación Restringida**: Solo se permite eliminar solicitudes que se encuentren en estado `Finalizada` (`BadRequestException`).
+4. **RN04 - Solicitud Inexistente**: Si se intenta consultar, actualizar o eliminar una solicitud con ID inexistente, se retorna un error 404 (`NotFoundException`).
 
-### DTOs y Validaciones (`class-validator` & `class-transformer`)
-- `CreateSoporteDto`:
-  - `titulo`: Mínimo 5 caracteres (`@MinLength(5)`).
-  - `cliente`: Campo no vacío (`@IsNotEmpty()`).
-  - `categoria`: Valores permitidos definidos en lista (`@IsIn`).
-  - `prioridad`: Valores permitidos (`Baja`, `Media`, `Alta`, `Crítica`).
-  - `descripcion`: Mínimo 15 caracteres (`@MinLength(15)`).
-  - `fecha`: Transformación a objeto `Date` (`@Type(() => Date)`).
-- `UpdateSoporteDto`: Extiende de `CreateSoporteDto` usando `PartialType` con opción a actualizar `estado` (`Pendiente`, `En Proceso`, `Finalizada`).
+### Respuestas y Manejo de Errores
+- `200 OK`: Operación exitosa (Lectura / Actualización / Eliminación).
+- `201 Created`: Solicitud creada exitosamente.
+- `400 Bad Request`: Datos de entrada inválidos o violación de regla de negocio.
+- `404 Not Found`: Registro no encontrado en la base de datos.
